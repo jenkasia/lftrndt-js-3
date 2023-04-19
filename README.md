@@ -1,2 +1,3 @@
-# lftrndt-js-1
-[Demo](https://jenkasia.github.io/lftrndt-js-1/)
+# lftrndt-js-2
+
+[Demo](https://jenkasia.github.io/lftrndt-js-2/)
