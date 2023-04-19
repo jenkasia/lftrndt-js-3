@@ -4,18 +4,23 @@
     <title>Weather Tracker</title>
     <link rel="stylesheet" type="text/css" href="styles.css" />
   </head>
+
   <body>
     <h1>Weather Tracker</h1>
-    <div>
-    <label for="week-select">Select Week:</label>
-    <select id="week-select">
-      <option value="1">Week 1</option>
-      <option value="2">Week 2</option>
-      <option value="3">Week 3</option>
-      <option value="4">Week 4</option>
-    </select>
-    
-    <button id="start-tracking">Start Tracking</button>
+    <div class="form">
+      <div>
+        <label for="week-select">Select Week:</label>
+        <select id="week-select">
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4">Week 4</option>
+        </select>
+      </div>
+      <div id="button-container">
+        <button id="start-tracking">Start Tracking</button>
+      </div>
+    </div>
     <div id="table-container"></div>
     <script src="main.js"></script>
   </body>

@@ -75,3 +75,8 @@ tr:hover {
 .error {
   color: red;
 }
+
+.form {
+  display: flex;
+  align-items: flex-end;
+}
