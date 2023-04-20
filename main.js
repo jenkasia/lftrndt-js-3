@@ -174,7 +174,6 @@ function generateChart(data) {
   const temperatureNodes = xmlDoc.getElementsByTagName("temperature");
   for (let i = 0; i < temperatureNodes.length; i++) {
     const day = temperatureNodes[i].getElementsByTagName("day")[0].textContent;
-    console.log("🚀 ~ file: main.js:167 ~ day:", day);
     const maxTemp = parseFloat(
       temperatureNodes[i].getElementsByTagName("max")[0].textContent
     );
@@ -225,7 +224,7 @@ function generateChart(data) {
     },
     yaxis: {
       title: {
-        text: "Temperature (&deg;C)",
+        text: "Temperature C",
       },
     },
     fill: {
