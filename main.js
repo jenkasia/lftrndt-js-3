@@ -4,6 +4,10 @@ const LONGITUDE = -74.01;
 const TIMEZONE = "America/New_York";
 const DAILY = "temperature_2m_max,temperature_2m_min";
 
+let chart;
+let boundedHmlHandler;
+let boundedChartHandler;
+
 async function getWeatherData(startDate, endDate) {
   const params = new URLSearchParams({
     latitude: LATITUDE,
@@ -21,6 +25,7 @@ async function getWeatherData(startDate, endDate) {
 
     if (data.daily.time.length > 0) {
       createXMLButton(data);
+      createChartButton(data);
       const table = generateTable(data.daily);
       document.getElementById("table-container").innerHTML = table;
     } else {
@@ -101,7 +106,7 @@ function generateXML(data) {
     xml += `\t<temperature>\n\t\t<day>${dayOfWeek}</day>\n\t\t<date>\n\t\t\t<dateValue>${formattedDate}</dateValue>\n\t\t\t<dateFormat>YYYY-MM-DD</dateFormat>\n\t\t</date>\n\t\t<min>${minTemp}</min>\n\t\t<max>${maxTemp}</max>\n\t</temperature>\n`;
   });
   xml += "</temperatures>";
-  downloadXML(xml);
+  return xml;
 }
 
 function downloadXML(xml) {
@@ -123,10 +128,6 @@ function downloadXML(xml) {
   }
 }
 
-function handleXMLButtonClick(data) {
-  generateXML(data.daily);
-}
-
 function createXMLButton(data) {
   let xmlButton = document.getElementById("generate-xml");
   if (!xmlButton) {
@@ -137,10 +138,155 @@ function createXMLButton(data) {
     xmlButton.textContent = "Generate XML";
     document.getElementById("button-container").appendChild(xmlButton);
   } else {
-    xmlButton.removeEventListener("click", handleXMLButtonClick);
+    xmlButton.removeEventListener("click", boundedHmlHandler);
   }
 
-  xmlButton.addEventListener("click", handleXMLButtonClick.bind(null, data));
+  boundedHmlHandler = handleXMLButtonClick.bind(null, data);
+  xmlButton.addEventListener("click", boundedHmlHandler);
+}
+
+function createChartButton(data) {
+  let chartButton = document.getElementById("display-chart");
+  if (!chartButton) {
+    chartButton =
+      document.getElementById("display-chart") ||
+      document.createElement("button");
+    chartButton.id = "display-chart";
+    chartButton.textContent = "Display Chart";
+    document.getElementById("button-container").appendChild(chartButton);
+  } else {
+    chartButton.removeEventListener("click", boundedChartHandler);
+  }
+
+  boundedChartHandler = generateChart.bind(null, data);
+  chartButton.addEventListener("click", boundedChartHandler);
+}
+
+function generateChart(data) {
+  const categories = [];
+  const maxTempData = [];
+  const minTempData = [];
+  const parser = new DOMParser();
+  const xmlString = generateXML(data.daily);
+
+  const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+  const temperatureNodes = xmlDoc.getElementsByTagName("temperature");
+  for (let i = 0; i < temperatureNodes.length; i++) {
+    const day = temperatureNodes[i].getElementsByTagName("day")[0].textContent;
+    console.log("🚀 ~ file: main.js:167 ~ day:", day);
+    const maxTemp = parseFloat(
+      temperatureNodes[i].getElementsByTagName("max")[0].textContent
+    );
+    const minTemp = parseFloat(
+      temperatureNodes[i].getElementsByTagName("min")[0].textContent
+    );
+
+    categories.push(day);
+    maxTempData.push(maxTemp);
+    minTempData.push(minTemp);
+  }
+
+  const options = {
+    series: [
+      {
+        name: "Max Temperature",
+        data: maxTempData,
+      },
+      {
+        name: "Min Temperature",
+        data: minTempData,
+      },
+    ],
+    chart: {
+      height: 350,
+      type: "bar",
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "50%",
+        endingShape: "rounded",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      colors: ["transparent"],
+    },
+    xaxis: {
+      categories: categories,
+      title: {
+        text: "Day",
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Temperature (&deg;C)",
+      },
+    },
+    fill: {
+      opacity: 1,
+    },
+    tooltip: {
+      y: {
+        formatter: function (val) {
+          return val + "&deg;C";
+        },
+      },
+    },
+  };
+
+  destroyChart();
+  chart = new ApexCharts(document.querySelector("#chart-container"), options);
+
+  chart.render();
+}
+
+function destroyChart() {
+  if (chart) {
+    chart.destroy();
+  }
+}
+
+function removeChartButton() {
+  const chartButton = document.getElementById("display-chart");
+  if (chartButton) {
+    chartButton.remove();
+  }
+}
+
+function removeChartButtonListener() {
+  const chartButton = document.getElementById("display-chart");
+  if (chartButton) {
+    chartButton.removeEventListener("click", boundedHmlHandler);
+  }
+}
+
+function removeXmlButton() {
+  const xmlButton = document.getElementById("generate-xml");
+  if (xmlButton) {
+    xmlButton.remove();
+  }
+}
+
+function removeXmlButtonListener() {
+  const xmlButton = document.getElementById("generate-xml");
+  if (xmlButton) {
+    xmlButton.removeEventListener("click", boundedHmlHandler);
+  }
+}
+
+function clearTable() {
+  document.getElementById("table-container").innerHTML = "";
+}
+
+function handleXMLButtonClick(data) {
+  const xml = generateXML(data.daily);
+  downloadXML(xml);
 }
 
 function main() {
@@ -148,15 +294,15 @@ function main() {
     const week = document.getElementById("week-select").value;
     const startDate = getStartDateOfWeek(week);
     const endDate = getEndDateOfWeek(week);
+    removeXmlButtonListener();
     getWeatherData(startDate, endDate);
   });
 
   document.getElementById("week-select").addEventListener("change", (event) => {
-    const xmlButton = document.getElementById("generate-xml");
-    document.getElementById("table-container").innerHTML = "";
-    if (xmlButton) {
-      xmlButton.remove();
-    }
+    removeXmlButton();
+    removeChartButton();
+    destroyChart();
+    clearTable();
   });
 }
 

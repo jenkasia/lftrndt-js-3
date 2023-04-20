@@ -1,6 +1,6 @@
-# lftrndt-js-2
+# lftrndt-js-3
 
-[Demo](https://jenkasia.github.io/lftrndt-js-2/)
+[Demo](https://jenkasia.github.io/lftrndt-js-3/)
 
 ### Important notice (please reade before)
 
